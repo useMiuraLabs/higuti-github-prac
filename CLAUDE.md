@@ -89,6 +89,8 @@ shadcn (packages/ui/src/shadcn)
 - ルートは `new Hono().get(...).post(...)` のようにメソッドチェーンで書く。チェーンしないと Hono RPC の型が FE に伝わらない
 - 機能ごとのルートは `apps/api/src/routes/<feature>.ts` に置き、`apps/api/src/index.ts` で登録する。並行開発中は自分の機能のファイルだけを書く
 - JSON のキーは camelCase (`createdBy` など)。DB のカラム名 (snake_case) との対応は Drizzle のテーブル定義が持つ
+- 入力の検証は `apps/api/src/lib/validate.ts` の `validate(target, schema)` を使う。エラーは `{ message, fieldErrors }` (`packages/schema` の `ApiError`) の形で 400 を返す。`@hono/valibot-validator` を直接使うと入力値ごと返ってしまうため
+- 入力エラー以外のエラー (404 など) も `{ message }` の形で返す
 - FE は `apps/web/src/lib/api.ts` のクライアント経由で呼ぶ。`fetch` を直接書かない
 - FE は `apps/api/dist/types` に出力した型を参照する (Hono 公式の推奨: https://hono.dev/docs/guides/rpc#compile-your-code-before-using-it-recommended)。API を変えたのに FE の型が古いときは `pnpm --filter @higuti/api build:types` を実行する
 
@@ -98,6 +100,15 @@ shadcn (packages/ui/src/shadcn)
 - 定義を変えたら `pnpm --filter @higuti/api db:generate` でマイグレーションを生成してコミットする。ローカルへの適用は `pnpm dev` が行う
 - 選択肢 (`status` / `created_by`) と文字数などの上限は `packages/schema` に定義し、テーブル定義・API・FE のすべてがそこを参照する
 - 開発用のデータは `apps/api/seed/shops.sql` に置く。`pnpm dev` がローカル D1 にだけ流す (本番には流さない)。id を固定した `INSERT OR IGNORE` で書き、何度流しても重複しないようにする
+
+### エラーの表示
+
+- 入力項目のエラーは、その項目の下に出す (`TextField` などの `error`)
+- 通信・サーバーの失敗など、出す場所がない失敗は `@higuti/ui/components/Toast` の `toast.error` で出す
+
+### 画面遷移のボタン
+
+ボタンの見た目のリンクは `<Button asChild><Link to="...">...</Link></Button>` と書く。`packages/ui` を TanStack Router に依存させないため、リンク専用のコンポーネントは作らない
 
 ### データ取得
 
