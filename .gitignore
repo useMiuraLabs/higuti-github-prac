@@ -6,3 +6,6 @@ dist/
 *.tsbuildinfo
 .DS_Store
 worker-configuration.d.ts
+
+# ブレスト (superpowers) の作業ファイル
+docs/superpowers/
