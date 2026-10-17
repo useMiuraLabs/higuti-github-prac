@@ -130,7 +130,7 @@ gh stack submit               # 全ブランチを push し、正しい base で
 `.github/workflows/ci.yml`
 
 - PR と main への push で `fmt:check` / `lint` / `typecheck` / `build` / `test` を実行する
-- main への push で Cloudflare Workers にデプロイする (`higuti.miura-188cm.dev`)。次の設定をするまではデプロイ job はスキップされる
+- main への push で、D1 にマイグレーションを適用してから Cloudflare Workers にデプロイする (`higuti.miura-188cm.dev`)
   - secret: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
-  - リポジトリ変数: `CLOUDFLARE_DEPLOY_ENABLED=true`
-- D1 の `database_id` は `wrangler.jsonc` に書いていない。D1 が無ければ deploy job が `wrangler d1 create` で作り、`wrangler deploy` は同名の D1 に接続する
+  - リポジトリ変数: `CLOUDFLARE_DEPLOY_ENABLED=true` (`false` にするとデプロイを止められる)
+- 本番の D1 は `higuti` (APAC)。`database_id` は `apps/api/wrangler.jsonc` に書いてある

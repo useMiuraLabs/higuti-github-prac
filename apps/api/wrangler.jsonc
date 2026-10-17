@@ -9,11 +9,11 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"],
   },
-  // database_id は初回デプロイ時に wrangler の自動プロビジョニングで払い出す
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "higuti",
+      "database_id": "a0323b8c-eb07-4982-a2cd-c615af6aea27",
       "migrations_dir": "migrations",
     },
   ],

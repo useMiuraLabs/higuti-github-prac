@@ -30,7 +30,7 @@ jobs:
 
   deploy:
     needs: check
-    # Cloudflare の secret を登録し、リポジトリ変数 CLOUDFLARE_DEPLOY_ENABLED を true にするまではスキップする
+    # リポジトリ変数 CLOUDFLARE_DEPLOY_ENABLED が true のときだけデプロイする
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     concurrency:
@@ -48,9 +48,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # migrations apply --remote は D1 が存在しないと失敗し、自動プロビジョニングは deploy の中でしか行われない。
-      # 初回は先に作っておく (deploy は同名の既存 D1 に接続する)
-      - run: pnpm --filter @higuti/api exec wrangler d1 info higuti || pnpm --filter @higuti/api exec wrangler d1 create higuti
       - run: pnpm --filter @higuti/api db:migrate:remote
       # vite build が出力した設定を明示する。turbo のキャッシュから dist だけ復元されても同じ設定でデプロイできる
       - run: pnpm --filter @higuti/web exec wrangler deploy --config dist/higuti/wrangler.json
