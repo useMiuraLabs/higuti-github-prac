@@ -7,7 +7,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # main では deploy を途中で止めないようキャンセルしない
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check:
@@ -15,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # pnpm のバージョンは package.json の packageManager から読む
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
@@ -40,13 +41,16 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # migrations apply --remote は D1 が存在しないと失敗し、自動プロビジョニングは deploy の中でしか行われない。
+      # 初回は先に作っておく (deploy は同名の既存 D1 に接続する)
+      - run: pnpm --filter @higuti/api exec wrangler d1 info higuti || pnpm --filter @higuti/api exec wrangler d1 create higuti
       - run: pnpm --filter @higuti/api db:migrate:remote
-      # vite build が出力した dist/higuti/wrangler.json を使ってデプロイする
-      - run: pnpm --filter @higuti/web exec wrangler deploy
+      # vite build が出力した設定を明示する。turbo のキャッシュから dist だけ復元されても同じ設定でデプロイできる
+      - run: pnpm --filter @higuti/web exec wrangler deploy --config dist/higuti/wrangler.json
