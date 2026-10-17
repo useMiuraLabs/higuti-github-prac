@@ -6,5 +6,6 @@
 1. CLI
 2. GUI (VScode)
 3. Claude
-
+4. Gemini
+5. Higuchi
 
