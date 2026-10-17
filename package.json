@@ -14,7 +14,7 @@
   "devDependencies": {
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
-    "turbo": "^2.11.9"
+    "turbo": "^2.11.8"
   },
   "packageManager": "pnpm@12.14.0"
 }
