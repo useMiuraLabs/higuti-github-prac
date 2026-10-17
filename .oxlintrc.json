@@ -30,22 +30,17 @@
           {
             "patterns": [
               {
-                "group": ["@higuti/ui/**", "**/packages/ui/src/**", "!@higuti/ui/styles.css"],
-                "message": "@higuti/ui のデザインシステムコンポーネントは \"@higuti/ui\" から import してください。shadcn を直接使わないでください"
+                "group": [
+                  "@higuti/ui/**",
+                  "**/packages/ui/src/**",
+                  "!@higuti/ui/components/**",
+                  "!@higuti/ui/styles.css"
+                ],
+                "message": "デザインシステムのコンポーネントは \"@higuti/ui/components/<Name>\" から import してください。shadcn を直接使わないでください"
               }
             ]
           }
         ]
-      }
-    },
-    {
-      "files": [
-        "packages/schema/src/index.ts",
-        "packages/ui/src/index.ts",
-        "apps/api/src/db/schema.ts"
-      ],
-      "rules": {
-        "unicorn/no-empty-file": "off"
       }
     }
   ]

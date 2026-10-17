@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
     "./styles.css": "./src/styles.css",
     "./components/*": "./src/components/*.tsx",
     "./shadcn/*": "./src/shadcn/*.tsx",
@@ -12,10 +11,12 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
   },
   "dependencies": {
-    "cn": "^0.4.0"
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.4.0",
+    "radix-ui": "^1.8.1"
   },
   "devDependencies": {
     "@higuti/tsconfig": "workspace:*",
