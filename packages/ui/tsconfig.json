@@ -1,0 +1,4 @@
+{
+  "extends": "@higuti/tsconfig/react.json",
+  "include": ["src"]
+}
