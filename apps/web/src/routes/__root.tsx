@@ -1,3 +1,4 @@
+import { Toaster } from "@higuti/ui/components/Toast";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
@@ -20,6 +21,7 @@ function RootLayout() {
       <main className="mx-auto max-w-4xl p-4">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   );
 }
