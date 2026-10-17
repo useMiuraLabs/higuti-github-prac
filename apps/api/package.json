@@ -15,7 +15,7 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "build:types": "tsc -p tsconfig.build.json",
-    "postinstall": "wrangler types"
+    "postinstall": "wrangler types && tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@higuti/schema": "workspace:*",

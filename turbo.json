@@ -12,7 +12,7 @@
       "dependsOn": ["^build:types"]
     },
     "build:types": {
-      "outputs": ["dist/types/**", "worker-configuration.d.ts"]
+      "outputs": ["dist/types/**"]
     }
   }
 }

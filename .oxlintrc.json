@@ -30,7 +30,7 @@
           {
             "patterns": [
               {
-                "group": ["@higuti/ui/**", "!@higuti/ui/styles.css"],
+                "group": ["@higuti/ui/**", "**/packages/ui/src/**", "!@higuti/ui/styles.css"],
                 "message": "@higuti/ui のデザインシステムコンポーネントは \"@higuti/ui\" から import してください。shadcn を直接使わないでください"
               }
             ]
