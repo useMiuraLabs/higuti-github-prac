@@ -13,6 +13,11 @@
 
 Docker は使わない。D1 はローカルでは Miniflare が SQLite として `apps/api/.wrangler/state` に作る。Cloudflare のアカウントはローカル開発に不要。
 
+### 依存の追加
+
+pnpm は公開から 24 時間経っていないバージョンを入れない (`minimumReleaseAge` の既定値)。サプライチェーン攻撃への対策なので緩めない。
+弾かれたときに pnpm が `pnpm-workspace.yaml` へ `minimumReleaseAgeExclude` を自動で追記することがあるが、コミットせず、24 時間以上前のバージョンを指定し直す。
+
 ## コマンド
 
 | コマンド                                    | 内容                                                                                           |
@@ -67,8 +72,10 @@ shadcn (packages/ui/src/shadcn)
     → feature のコンポーネント (apps/web/src/features/*/components)
 ```
 
-- feature から shadcn を直接使わない。`apps/` から `@higuti/ui/*` のサブパスを import すると oxlint がエラーにする (`@higuti/ui/styles.css` だけは許可)
+- feature から shadcn を直接使わない。`apps/` から `@higuti/ui/*` のサブパスや `packages/ui/src` への相対パスを import すると oxlint がエラーにする (`@higuti/ui/styles.css` だけは許可)
 - shadcn の部品を足すときは `packages/ui` で `pnpm dlx shadcn@latest add <name>` を実行し、デザインシステムのコンポーネントで包んでから `src/index.ts` で公開する
+  - shadcn のレジストリは依存を書き漏らすことがある (例: button の `class-variance-authority`)。`pnpm typecheck` で import エラーが出たら足す
+  - 生成されたファイルは oxfmt の形式ではないので `pnpm fmt` を実行する
 
 ### validation
 
@@ -95,7 +102,7 @@ shadcn (packages/ui/src/shadcn)
 ### テスト
 
 - vitest を使う。`apps/api` のテストは `@cloudflare/vitest-plugin` で Workers ランタイムとローカル D1 の上で動く
-- テスト間で D1 のデータは共有される。他のテストが作ったデータに依存する assertion (件数が 0 件、など) を書かない
+- 同じテストファイル内のテスト間では D1 のデータが共有される (ファイルが違えば分離される)。他のテストが作ったデータに左右される assertion (件数が 0 件、など) を書かない
 
 ### 生成ファイル
 
@@ -126,4 +133,4 @@ gh stack submit               # 全ブランチを push し、正しい base で
 - main への push で Cloudflare Workers にデプロイする (`higuti.miura-188cm.dev`)。次の設定をするまではデプロイ job はスキップされる
   - secret: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
   - リポジトリ変数: `CLOUDFLARE_DEPLOY_ENABLED=true`
-- D1 の `database_id` は `wrangler.jsonc` に書いていない。初回デプロイ時に wrangler の自動プロビジョニングで作られる
+- D1 の `database_id` は `wrangler.jsonc` に書いていない。D1 が無ければ deploy job が `wrangler d1 create` で作り、`wrangler deploy` は同名の D1 に接続する
