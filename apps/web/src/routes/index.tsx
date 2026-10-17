@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ShopListPage } from "../features/shopList/components/ShopListPage";
+import { loadShopList } from "../features/shopList/hooks/useShopList";
 
-// 店舗一覧・検索画面 (#20 の担当が実装する)
 export const Route = createFileRoute("/")({
-  component: ShopListPage,
+  loader: () => loadShopList(),
+  component: ShopListRoutePage,
 });
 
-function ShopListPage() {
-  return <h1 className="text-2xl font-bold">お店一覧</h1>;
+function ShopListRoutePage() {
+  const shops = Route.useLoaderData();
+  return <ShopListPage initialShops={shops} />;
 }
