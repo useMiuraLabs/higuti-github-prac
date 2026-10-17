@@ -1,0 +1,35 @@
+{
+  "name": "@higuti/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": {
+      "types": "./dist/types/client.d.ts",
+      "default": "./src/client.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc && tsc -p test",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "build:types": "tsc -p tsconfig.build.json",
+    "postinstall": "wrangler types && tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@higuti/schema": "workspace:*",
+    "@hono/valibot-validator": "^0.6.1",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13",
+    "valibot": "^1.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.4.4",
+    "@higuti/tsconfig": "workspace:*",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.151.1"
+  }
+}

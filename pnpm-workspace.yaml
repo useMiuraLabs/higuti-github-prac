@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+# 依存パッケージに許可する操作。ここに無いパッケージのビルドスクリプトは実行されない
+permissions:
+  esbuild:
+    build: true
+  workerd:
+    build: true
+  "@tanstack/router-plugin":
+    skills: false

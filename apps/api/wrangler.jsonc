@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "higuti",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // /api/* は Worker が処理し、それ以外は web のビルド結果を配信する
+  // assets の配信元は apps/web の Vite (@cloudflare/vite-plugin) が設定するので directory は書かない
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "higuti",
+      "database_id": "a0323b8c-eb07-4982-a2cd-c615af6aea27",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "routes": [{ "pattern": "higuti.miura-188cm.dev", "custom_domain": true }],
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "jsx-a11y", "import", "vitest", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "import/no-cycle": "error",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ]
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/routeTree.gen.ts",
+    "**/worker-configuration.d.ts",
+    "**/migrations/**"
+  ],
+  "overrides": [
+    {
+      "files": ["apps/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@higuti/ui/**", "**/packages/ui/src/**", "!@higuti/ui/styles.css"],
+                "message": "@higuti/ui のデザインシステムコンポーネントは \"@higuti/ui\" から import してください。shadcn を直接使わないでください"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/schema/src/index.ts",
+        "packages/ui/src/index.ts",
+        "apps/api/src/db/schema.ts"
+      ],
+      "rules": {
+        "unicorn/no-empty-file": "off"
+      }
+    }
+  ]
+}
