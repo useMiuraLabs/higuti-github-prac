@@ -20,14 +20,14 @@ pnpm は公開から 24 時間経っていないバージョンを入れない (
 
 ## コマンド
 
-| コマンド                                    | 内容                                                                                           |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `pnpm dev`                                  | ローカル D1 にマイグレーションを適用してから、SPA と API を 1 つの Vite dev サーバーで起動する |
-| `pnpm build`                                | ビルド (`apps/web/dist` に client と Worker を出力)                                            |
-| `pnpm test`                                 | 全パッケージのテスト                                                                           |
-| `pnpm typecheck`                            | 全パッケージの型チェック                                                                       |
-| `pnpm lint` / `pnpm fmt` / `pnpm fmt:check` | oxlint / oxfmt                                                                                 |
-| `pnpm --filter @higuti/api db:generate`     | Drizzle のテーブル定義からマイグレーションを生成する                                           |
+| コマンド                                    | 内容                                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`                                  | ローカル D1 にマイグレーションと seed を適用してから、SPA と API を 1 つの Vite dev サーバーで起動する |
+| `pnpm build`                                | ビルド (`apps/web/dist` に client と Worker を出力)                                                    |
+| `pnpm test`                                 | 全パッケージのテスト                                                                                   |
+| `pnpm typecheck`                            | 全パッケージの型チェック                                                                               |
+| `pnpm lint` / `pnpm fmt` / `pnpm fmt:check` | oxlint / oxfmt                                                                                         |
+| `pnpm --filter @higuti/api db:generate`     | Drizzle のテーブル定義からマイグレーションを生成する                                                   |
 
 ## 構成
 
@@ -68,12 +68,13 @@ feature をまたぐ import はしない。複数の feature で使うものは 
 
 ```
 shadcn (packages/ui/src/shadcn)
-  → デザインシステムのコンポーネント (packages/ui/src/components、packages/ui/src/index.ts から公開)
+  → デザインシステムのコンポーネント (packages/ui/src/components。1 コンポーネント 1 ファイル)
     → feature のコンポーネント (apps/web/src/features/*/components)
 ```
 
-- feature から shadcn を直接使わない。`apps/` から `@higuti/ui/*` のサブパスや `packages/ui/src` への相対パスを import すると oxlint がエラーにする (`@higuti/ui/styles.css` だけは許可)
-- shadcn の部品を足すときは `packages/ui` で `pnpm dlx shadcn@latest add <name>` を実行し、デザインシステムのコンポーネントで包んでから `src/index.ts` で公開する
+- コンポーネントは `@higuti/ui/components/<Name>` から 1 つずつ import する (例: `import { Button } from "@higuti/ui/components/Button"`)。全部をまとめて export するファイル (`index.ts`) は作らない。2 人が同時にコンポーネントを足しても同じファイルを編集しないようにするため
+- feature から shadcn を直接使わない。`apps/` から `@higuti/ui/components/*` と `@higuti/ui/styles.css` 以外のサブパスや、`packages/ui/src` への相対パスを import すると oxlint がエラーにする
+- shadcn の部品を足すときは `packages/ui` で `pnpm dlx shadcn@latest add <name>` を実行し、`src/components/<Name>.tsx` でデザインシステムのコンポーネントとして包む
   - shadcn のレジストリは依存を書き漏らすことがある (例: button の `class-variance-authority`)。`pnpm typecheck` で import エラーが出たら足す
   - 生成されたファイルは oxfmt の形式ではないので `pnpm fmt` を実行する
 
@@ -86,6 +87,8 @@ shadcn (packages/ui/src/shadcn)
 ### API
 
 - ルートは `new Hono().get(...).post(...)` のようにメソッドチェーンで書く。チェーンしないと Hono RPC の型が FE に伝わらない
+- 機能ごとのルートは `apps/api/src/routes/<feature>.ts` に置き、`apps/api/src/index.ts` で登録する。並行開発中は自分の機能のファイルだけを書く
+- JSON のキーは camelCase (`createdBy` など)。DB のカラム名 (snake_case) との対応は Drizzle のテーブル定義が持つ
 - FE は `apps/web/src/lib/api.ts` のクライアント経由で呼ぶ。`fetch` を直接書かない
 - FE は `apps/api/dist/types` に出力した型を参照する (Hono 公式の推奨: https://hono.dev/docs/guides/rpc#compile-your-code-before-using-it-recommended)。API を変えたのに FE の型が古いときは `pnpm --filter @higuti/api build:types` を実行する
 
@@ -93,6 +96,8 @@ shadcn (packages/ui/src/shadcn)
 
 - テーブル定義は `apps/api/src/db/schema.ts` に置く。FE には DB の構造を見せない (FE と共有するのは `packages/schema` だけ)
 - 定義を変えたら `pnpm --filter @higuti/api db:generate` でマイグレーションを生成してコミットする。ローカルへの適用は `pnpm dev` が行う
+- 選択肢 (`status` / `created_by`) と文字数などの上限は `packages/schema` に定義し、テーブル定義・API・FE のすべてがそこを参照する
+- 開発用のデータは `apps/api/seed/shops.sql` に置く。`pnpm dev` がローカル D1 にだけ流す (本番には流さない)。id を固定した `INSERT OR IGNORE` で書き、何度流しても重複しないようにする
 
 ### データ取得
 
