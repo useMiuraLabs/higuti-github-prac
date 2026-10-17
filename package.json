@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @higuti/api db:migrate:local && pnpm --filter @higuti/web dev",
+    "dev": "pnpm --filter @higuti/api db:setup:local && pnpm --filter @higuti/web dev",
     "build": "turbo run build",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
