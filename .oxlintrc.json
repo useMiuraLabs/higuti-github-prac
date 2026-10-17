@@ -42,6 +42,13 @@
           }
         ]
       }
+    },
+    {
+      "files": ["packages/ui/src/shadcn/**"],
+      "rules": {
+        "no-shadow": "off",
+        "react/no-unstable-nested-components": "off"
+      }
     }
   ]
 }
