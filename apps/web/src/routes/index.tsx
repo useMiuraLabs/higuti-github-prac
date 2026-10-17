@@ -1,15 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "../lib/api";
 
+// 店舗一覧・検索画面 (#20 の担当が実装する)
 export const Route = createFileRoute("/")({
-  loader: async () => {
-    const res = await api.health.$get();
-    return res.json();
-  },
-  component: IndexRoute,
+  component: ShopListPage,
 });
 
-function IndexRoute() {
-  const { status } = Route.useLoaderData();
-  return <p>API: {status}</p>;
+function ShopListPage() {
+  return <h1 className="text-2xl font-bold">お店一覧</h1>;
 }
