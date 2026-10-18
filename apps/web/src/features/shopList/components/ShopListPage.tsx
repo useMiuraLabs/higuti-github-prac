@@ -11,6 +11,7 @@ export function ShopListPage({ initialShops }: ShopListPageProps) {
   const {
     shops,
     filters,
+    keywordInput,
     areaOptions,
     genreOptions,
     sortOptions,
@@ -19,6 +20,7 @@ export function ShopListPage({ initialShops }: ShopListPageProps) {
     setArea,
     setGenre,
     setKeyword,
+    submitKeyword,
     setSort,
     resetFilters,
   } = useShopList(initialShops);
@@ -32,6 +34,7 @@ export function ShopListPage({ initialShops }: ShopListPageProps) {
 
       <ShopFilterBar
         filters={filters}
+        keywordInput={keywordInput}
         areaOptions={areaOptions}
         genreOptions={genreOptions}
         sortOptions={sortOptions}
@@ -40,6 +43,7 @@ export function ShopListPage({ initialShops }: ShopListPageProps) {
         onAreaChange={setArea}
         onGenreChange={setGenre}
         onKeywordChange={setKeyword}
+        onKeywordSubmit={submitKeyword}
         onSortChange={setSort}
         onReset={resetFilters}
       />

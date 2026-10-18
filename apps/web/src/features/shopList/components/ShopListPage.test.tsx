@@ -6,8 +6,9 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { KEYWORD_DEBOUNCE_MS } from "../hooks/useShopList";
 import { ShopListPage } from "./ShopListPage";
 
 const MOCK_SHOPS: Shop[] = [
@@ -79,7 +80,7 @@ function renderShopList(shops: readonly Shop[] = MOCK_SHOPS) {
 }
 
 describe("ShopListPage", () => {
-  it("店舗カードを一覧表示し、ステータス・エリア・ジャンル・キーワードで絞り込める", async () => {
+  it("店舗カードを一覧表示し、ステータス・エリア・ジャンル・検索ボタンで絞り込める", async () => {
     renderShopList();
 
     expect(await screen.findByText("架空珈琲 清澄店")).toBeTruthy();
@@ -97,11 +98,46 @@ describe("ShopListPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "条件をクリア" }));
     expect(screen.getByText("全 3 件")).toBeTruthy();
 
-    // エリアとフリーワード（メモ）で絞り込み
-    fireEvent.change(screen.getByLabelText("エリア"), { target: { value: "清澄白河" } });
+    // フリーワード入力直後はまだ絞り込まれず、検索ボタン押下で即座に絞り込まれる
     fireEvent.change(screen.getByLabelText("フリーワード"), { target: { value: "ラテ" } });
+    expect(screen.getByText("全 3 件")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "検索" }));
     expect(screen.getByText("架空珈琲 清澄店")).toBeTruthy();
     expect(screen.queryByText("サンプル食堂")).toBeNull();
+    expect(screen.getByText("全 1 件")).toBeTruthy();
+  });
+
+  it("フリーワード入力が止まってから 3 秒後に自動で API を叩いて絞り込む（入力中は叩かない）", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json([MOCK_SHOPS[0]]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderShopList();
+    await screen.findByText("架空珈琲 清澄店");
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.change(screen.getByLabelText("フリーワード"), { target: { value: "ラ" } });
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      fireEvent.change(screen.getByLabelText("フリーワード"), { target: { value: "ラテ" } });
+
+      // 入力から 2.9 秒時点ではまだ API を叩かない
+      await act(async () => {
+        vi.advanceTimersByTime(KEYWORD_DEBOUNCE_MS - 100);
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      // 最後の入力から 3 秒経過した時点で 1 回だけ API を叩く
+      await act(async () => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("全 1 件")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("評価が高い順・訪問日が新しい順で並び替えられる", async () => {
