@@ -16,6 +16,7 @@ type Option = {
 
 type ShopFilterBarProps = {
   filters: ShopFilterState;
+  keywordInput: string;
   areaOptions: readonly Option[];
   genreOptions: readonly Option[];
   sortOptions: readonly Option[];
@@ -24,6 +25,7 @@ type ShopFilterBarProps = {
   onAreaChange: (area: string) => void;
   onGenreChange: (genre: string) => void;
   onKeywordChange: (keyword: string) => void;
+  onKeywordSubmit: () => void;
   onSortChange: (sort: ShopSortOrder) => void;
   onReset: () => void;
 };
@@ -38,6 +40,7 @@ const STATUS_TABS: readonly { value: "" | ShopStatus; label: string }[] = [
 
 export function ShopFilterBar({
   filters,
+  keywordInput,
   areaOptions,
   genreOptions,
   sortOptions,
@@ -46,6 +49,7 @@ export function ShopFilterBar({
   onAreaChange,
   onGenreChange,
   onKeywordChange,
+  onKeywordSubmit,
   onSortChange,
   onReset,
 }: ShopFilterBarProps) {
@@ -77,13 +81,26 @@ export function ShopFilterBar({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <TextField
-          label="フリーワード"
-          type="search"
-          placeholder="店名・メモで検索"
-          value={filters.keyword}
-          onChange={(e) => onKeywordChange(e.target.value)}
-        />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onKeywordSubmit();
+          }}
+          className="flex items-end gap-2"
+        >
+          <div className="min-w-0 flex-1">
+            <TextField
+              label="フリーワード"
+              type="search"
+              placeholder="店名・メモで検索"
+              value={keywordInput}
+              onChange={(e) => onKeywordChange(e.target.value)}
+            />
+          </div>
+          <Button type="submit" variant="secondary">
+            検索
+          </Button>
+        </form>
         <SelectField
           label="エリア"
           options={areaOptions}

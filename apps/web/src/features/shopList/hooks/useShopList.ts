@@ -9,6 +9,8 @@ import {
 import { useEffect, useState } from "react";
 import { api } from "../../../lib/api";
 
+export const KEYWORD_DEBOUNCE_MS = 3000;
+
 export type ShopFilterState = {
   status: "" | ShopStatus;
   area: string;
@@ -95,20 +97,40 @@ export function filterAndSortShops(shops: readonly Shop[], filters: ShopFilterSt
 
 export function useShopList(initialShops: readonly Shop[]) {
   const [filters, setFilters] = useState<ShopFilterState>(INITIAL_FILTERS);
+  const [keywordInput, setKeywordInput] = useState("");
   const [remoteResult, setRemoteResult] = useState<{
     baseShops: readonly Shop[];
     shops: readonly Shop[];
   } | null>(null);
 
-  const hasActiveFilters =
+  // フリーワード入力が止まってから 3 秒後に検索条件へ反映する
+  useEffect(() => {
+    if (keywordInput === filters.keyword) {
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      setFilters((prev) =>
+        prev.keyword === keywordInput ? prev : { ...prev, keyword: keywordInput },
+      );
+    }, KEYWORD_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [keywordInput, filters.keyword]);
+
+  const hasAppliedFilters =
     filters.status !== "" ||
     filters.area !== "" ||
     filters.genre !== "" ||
     filters.keyword.trim() !== "" ||
     filters.sort !== "created_desc";
 
+  const hasActiveFilters = hasAppliedFilters || keywordInput.trim() !== "";
+
   useEffect(() => {
-    if (!hasActiveFilters) {
+    if (!hasAppliedFilters) {
       return;
     }
 
@@ -145,7 +167,7 @@ export function useShopList(initialShops: readonly Shop[]) {
     filters.genre,
     filters.keyword,
     filters.sort,
-    hasActiveFilters,
+    hasAppliedFilters,
   ]);
 
   const areas = Array.from(new Set(initialShops.map((shop) => shop.area))).toSorted();
@@ -161,7 +183,7 @@ export function useShopList(initialShops: readonly Shop[]) {
   ];
 
   const activeSource =
-    hasActiveFilters && remoteResult?.baseShops === initialShops
+    hasAppliedFilters && remoteResult?.baseShops === initialShops
       ? remoteResult.shops
       : initialShops;
   const shops = filterAndSortShops(activeSource, filters);
@@ -179,7 +201,13 @@ export function useShopList(initialShops: readonly Shop[]) {
   };
 
   const setKeyword = (keyword: string) => {
-    setFilters((prev) => ({ ...prev, keyword }));
+    setKeywordInput(keyword);
+  };
+
+  const submitKeyword = () => {
+    setFilters((prev) =>
+      prev.keyword === keywordInput ? prev : { ...prev, keyword: keywordInput },
+    );
   };
 
   const setSort = (sort: ShopSortOrder) => {
@@ -187,6 +215,7 @@ export function useShopList(initialShops: readonly Shop[]) {
   };
 
   const resetFilters = () => {
+    setKeywordInput("");
     setFilters(INITIAL_FILTERS);
     setRemoteResult(null);
   };
@@ -194,6 +223,7 @@ export function useShopList(initialShops: readonly Shop[]) {
   return {
     shops,
     filters,
+    keywordInput,
     areaOptions,
     genreOptions,
     sortOptions: SORT_OPTIONS,
@@ -202,6 +232,7 @@ export function useShopList(initialShops: readonly Shop[]) {
     setArea,
     setGenre,
     setKeyword,
+    submitKeyword,
     setSort,
     resetFilters,
   };
